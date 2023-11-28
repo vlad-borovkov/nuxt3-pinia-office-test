@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  test:
+    container_name: rocket-firm-nuxt3-test
+    build:
+      context: .
+      dockerfile: DockerfileTest
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/.output

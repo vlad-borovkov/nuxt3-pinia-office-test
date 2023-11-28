@@ -1,0 +1,20 @@
+@mixin font($alias, $name, $weight) {
+  @font-face {
+    font-family: $alias;
+    src: url('../fonts/' + $name + '.woff2') format('woff2'),
+      url('../fonts/' + $name + '.woff') format('woff'),
+      url('../fonts/' + $name + '.ttf') format('truetype'),
+      url('../fonts/' + $name + '.eot'),
+      url('../fonts/' + $name + '.eot?#iefix') format('embedded-opentype');
+    font-weight: $weight;
+    font-display: swap;
+  }
+}
+
+//@include font('Golos', 'GolosText-Regular', 400);
+//@include font('Golos', 'GolosText-Medium', 500);
+//@include font('Golos', 'GolosText-DemiBold', 600);
+//@include font('Golos', 'GolosText-Bold', 700);
+//@include font('Golos', 'GolosText-Black', 800);
+
+// @include font('PT Root UI', 'PTRootUI-Light', 300);

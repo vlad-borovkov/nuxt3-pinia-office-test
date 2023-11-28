@@ -1,0 +1,66 @@
+image: node:16.18.0
+# #
+# This GitLab CI configuration requires Git and Docker in the server
+# Also, project should be cloned to the server before first CI
+#
+# Required variables
+# $PRIVATE_KEY - SSH Key
+# $DEV_USER - Username to connect server
+# $DEV_HOST - Hostname to connect server
+# #
+stages:
+  - install
+  - deploy
+
+install:
+  stage: install
+  before_script:
+    - curl -o- -L https://yarnpkg.com/install.sh | bash
+    - export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+  script:
+    - yarn install
+  artifacts:
+    name: 'artifacts'
+    untracked: true
+    expire_in: 30 mins
+    paths:
+      - .npm/
+      - node_modules/
+      - .yarn/
+  only:
+    refs:
+      # - master
+      # - develop
+      # - stage
+
+dev_deploy:
+  stage: deploy
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - ssh-add <(echo "$DEV_PRIVATE_KEY")
+  script:
+    - ssh $USER@$DEV_HOST "cd $DEV_PATH && git pull"
+    - ssh $USER@$DEV_HOST "cd $DEV_PATH && docker-compose build --no-cache"
+    - ssh $USER@$DEV_HOST "cd $DEV_PATH && docker-compose up -d"
+    - ssh $USER@$DEV_HOST "docker image prune -af"
+  only:
+    - develop
+
+prod_deploy:
+  stage: deploy
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - mkdir -p ~/.ssh
+    - eval $(ssh-agent -s)
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - ssh-add <(echo "$PROD_PRIVATE_KEY")
+  script:
+    - ssh $USER@$PROD_HOST -p 9111 "cd $PROD_PATH && git pull"
+    - ssh $USER@$PROD_HOST -p 9111 "cd $PROD_PATH && docker-compose build --no-cache"
+    - ssh $USER@$PROD_HOST -p 9111 "cd $PROD_PATH && docker-compose up -d"
+    - ssh $USER@$PROD_HOST -p 9111 "docker image prune -af"
+  only:
+    - main

@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  vzlet:
+    # change container name depending on project name
+    container_name: rocketfront-hybrid
+    ports:
+      # change external port deneding on server side requirements
+      - 30022:3000
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.output
